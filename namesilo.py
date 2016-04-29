@@ -34,6 +34,7 @@ NAMESILO_OPERATIONS = {
     'lock_domain': 'domainLock',
     'register_domain': 'registerDomain',
     'renew_domain': 'renewDomain',
+    'register_domain_drop': 'registerDomainDrop',
     'remove_auto_renewal': 'removeAutoRenewal',
     'remove_email_forward': 'deleteEmailForward',
     'remove_privacy': 'removePrivacy',
@@ -216,7 +217,7 @@ class DNSModificationErrror(NameSiloError):
     pass
 
 
-NAMESILO_ERRORS = { 
+NAMESILO_ERRORS = {
     '101': HTTPSNotUsed,
     '102': NoVersionSpecified,
     '103': InvalidAPIVersion,
@@ -259,7 +260,8 @@ NAMESILO_ERRORS = {
 
 
 class NameSilo(object):
-    LIVE_BASE_URL = ' https://www.namesilo.com/api/'
+    LIVE_BASE_URL = 'https://www.namesilo.com/api/'
+    LIVE_BATCH_URL = 'https://www.namesilo.com/apibatch/'
     SANDBOX_BASE_URL = 'http://sandbox.namesilo.com/api/'
 
     VERSION = '1'
@@ -280,7 +282,8 @@ class NameSilo(object):
         operation = NAMESILO_OPERATIONS.get(operation, operation)
         kwargs.update(version=self.VERSION, type=self.RESPONSE_TYPE,
                       key=self.api_key)
-        r = requests.get(self.base_url + operation, params=kwargs)
+        base = self.base_url if 'registerDomainDrop' != operation else self.LIVE_BATCH_URL
+        r = requests.get(base + operation, params=kwargs)
         r.raise_for_status()
         root = ElementTree.XML(r.text)
         response = XmlDictConfig(root)
